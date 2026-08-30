@@ -20,7 +20,8 @@ class DVLNT_SAC_Shortcode {
 
 	/** @return void */
 	private static function assets() {
-		wp_enqueue_style( 'dvlnt-sac-frontend', DVLNT_SAC_URL . 'assets/css/frontend.css', array(), DVLNT_SAC_VERSION );
+		wp_enqueue_style( 'dvlnt-sac-lato', 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap', array(), null );
+		wp_enqueue_style( 'dvlnt-sac-frontend', DVLNT_SAC_URL . 'assets/css/frontend.css', array( 'dvlnt-sac-lato' ), DVLNT_SAC_VERSION );
 		wp_enqueue_script( 'dvlnt-sac-frontend', DVLNT_SAC_URL . 'assets/js/frontend.js', array(), DVLNT_SAC_VERSION, true );
 		wp_localize_script(
 			'dvlnt-sac-frontend',
@@ -55,4 +56,3 @@ class DVLNT_SAC_Shortcode {
 		return '<button type="button" class="service-area-trigger dvlnt-sac-trigger-button">' . esc_html( $atts['text'] ) . '</button>' . $modal;
 	}
 }
-

@@ -11,6 +11,20 @@
   var submit = form.querySelector('button[type="submit"]');
   var lastTrigger = null;
 
+  function updateViewport() {
+    var viewport = window.visualViewport;
+    var height = viewport ? viewport.height : window.innerHeight;
+    var offsetTop = viewport ? viewport.offsetTop : 0;
+    modal.style.setProperty('--dvlnt-sac-viewport-height', height + 'px');
+    modal.style.setProperty('--dvlnt-sac-viewport-top', offsetTop + 'px');
+
+    if (!modal.hidden && document.activeElement === input) {
+      window.requestAnimationFrame(function () {
+        input.scrollIntoView({ block: 'center', inline: 'nearest' });
+      });
+    }
+  }
+
   function showState(name, zip) {
     modal.querySelectorAll('[data-sac-state]').forEach(function (state) {
       state.hidden = state.getAttribute('data-sac-state') !== name;
@@ -42,7 +56,11 @@
     input.value = '';
     modal.hidden = false;
     document.body.classList.add('dvlnt-sac-open');
-    window.setTimeout(function () { input.focus(); }, 0);
+    updateViewport();
+    window.setTimeout(function () {
+      input.focus();
+      input.scrollIntoView({ block: 'center', inline: 'nearest' });
+    }, 0);
   }
 
   function closeModal() {
@@ -69,6 +87,13 @@
     error.textContent = '';
     input.focus();
   });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', updateViewport);
+    window.visualViewport.addEventListener('scroll', updateViewport);
+  } else {
+    window.addEventListener('resize', updateViewport);
+  }
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
