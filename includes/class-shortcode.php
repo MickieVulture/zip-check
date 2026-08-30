@@ -16,13 +16,18 @@ class DVLNT_SAC_Shortcode {
 	public static function init() {
 		add_shortcode( 'service_area_checker', array( __CLASS__, 'checker' ) );
 		add_shortcode( 'service_area_button', array( __CLASS__, 'button' ) );
+		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'assets' ) );
 	}
 
 	/** @return void */
-	private static function assets() {
-		wp_enqueue_style( 'dvlnt-sac-lato', 'https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap', array(), null );
-		wp_enqueue_style( 'dvlnt-sac-frontend', DVLNT_SAC_URL . 'assets/css/frontend.css', array( 'dvlnt-sac-lato' ), DVLNT_SAC_VERSION );
-		wp_enqueue_script( 'dvlnt-sac-frontend', DVLNT_SAC_URL . 'assets/js/frontend.js', array(), DVLNT_SAC_VERSION, true );
+	public static function assets() {
+		$css_file    = DVLNT_SAC_PATH . 'assets/css/frontend.css';
+		$script_file = DVLNT_SAC_PATH . 'assets/js/frontend.js';
+		$css_version = file_exists( $css_file ) ? (string) filemtime( $css_file ) : DVLNT_SAC_VERSION;
+		$js_version  = file_exists( $script_file ) ? (string) filemtime( $script_file ) : DVLNT_SAC_VERSION;
+
+		wp_enqueue_style( 'dvlnt-sac-frontend', DVLNT_SAC_URL . 'assets/css/frontend.css', array(), $css_version );
+		wp_enqueue_script( 'dvlnt-sac-frontend', DVLNT_SAC_URL . 'assets/js/frontend.js', array(), $js_version, true );
 		wp_localize_script(
 			'dvlnt-sac-frontend',
 			'dvlntSAC',
@@ -42,7 +47,6 @@ class DVLNT_SAC_Shortcode {
 			return '';
 		}
 		self::$rendered = true;
-		self::assets();
 		$settings = DVLNT_SAC_Settings::get();
 		ob_start();
 		include DVLNT_SAC_PATH . 'templates/modal.php';

@@ -3,7 +3,7 @@ Contributors: dvlnt
 Tags: service area, zip code, modal, local business, brizy
 Requires at least: 6.0
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -30,6 +30,11 @@ No. The browser sends one nonce-protected ZIP request to WordPress AJAX, and the
 Version 1 accepts standard five-digit US ZIP codes. The admin list may be entered one per line, comma-separated, or mixed.
 
 == Changelog ==
+
+= 1.0.2 =
+* Enqueue modal assets during the standard WordPress frontend asset phase for reliable Brizy rendering.
+* Self-host optimized Lato font files so privacy and optimization layers cannot block the modal font.
+* Use file modification times for automatic CSS and JavaScript cache busting.
 
 = 1.0.1 =
 * Load Lato only with the frontend modal assets.
