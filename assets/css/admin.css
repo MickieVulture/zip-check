@@ -1,0 +1,8 @@
+.dvlnt-sac-admin { max-width: 920px; }
+.dvlnt-sac-card { margin: 20px 0; padding: 22px 24px; border: 1px solid #dcdcde; border-radius: 8px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.dvlnt-sac-card h2 { margin-top: 0; }
+.dvlnt-sac-card > label { display: block; margin-bottom: 8px; font-weight: 600; }
+.dvlnt-sac-card .form-table { margin-top: 0; }
+#dvlnt-sac-zip-count { font-weight: 600; }
+@media (max-width: 782px) { .dvlnt-sac-card { padding: 18px; } }
+
