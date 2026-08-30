@@ -4,7 +4,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 $phone_href = preg_replace( '/[^0-9+]/', '', $settings['phone'] );
-$style       = '--dvlnt-sac-accent:' . $settings['accent_color'] . ';--dvlnt-sac-radius:' . absint( $settings['border_radius'] ) . 'px;';
+$font_stack = 'system-ui' === $settings['font_family'] ? 'system-ui, sans-serif' : '"' . $settings['font_family'] . '", ui-sans-serif, system-ui, sans-serif';
+$variables = array(
+	'font-family'=>$font_stack,'primary'=>$settings['accent_color'],'heading-color'=>$settings['heading_color'],'body-color'=>$settings['body_color'],'eyebrow-color'=>$settings['eyebrow_color'],'button-bg'=>$settings['button_background'],'button-text'=>$settings['button_text_color'],'input-border'=>$settings['input_border_color'],'modal-bg'=>$settings['modal_background'],'modal-border'=>$settings['modal_border_color'],'overlay'=>$settings['overlay_color'],'success'=>$settings['success_color'],'error'=>$settings['error_color'],
+	'modal-radius'=>absint($settings['border_radius']).'px','button-radius'=>absint($settings['button_radius']).'px','input-radius'=>absint($settings['input_radius']).'px','modal-width'=>absint($settings['modal_max_width']).'px','modal-padding'=>absint($settings['modal_padding']).'px','button-height'=>absint($settings['button_height']).'px','eyebrow-size'=>absint($settings['eyebrow_font_size']).'px','eyebrow-weight'=>absint($settings['eyebrow_font_weight']),'heading-size-desktop'=>absint($settings['heading_size_desktop']).'px','heading-size-tablet'=>absint($settings['heading_size_tablet']).'px','heading-size-mobile'=>absint($settings['heading_size_mobile']).'px','heading-weight'=>absint($settings['heading_font_weight']),'paragraph-size'=>absint($settings['paragraph_font_size']).'px','paragraph-weight'=>absint($settings['paragraph_font_weight']),'button-size'=>absint($settings['button_font_size']).'px','button-weight'=>absint($settings['button_font_weight']),'label-size'=>absint($settings['label_font_size']).'px','label-weight'=>absint($settings['label_font_weight']),
+);
+$style=''; foreach($variables as $name=>$value){$style.='--sac-'.$name.':'.$value.';';}
 ?>
 <div class="dvlnt-sac" data-dvlnt-sac hidden style="<?php echo esc_attr( $style ); ?>">
 	<div class="dvlnt-sac__overlay" data-sac-close></div>

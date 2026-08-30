@@ -1,15 +1,10 @@
-(function () {
-  'use strict';
-  var field = document.getElementById('dvlnt-sac-zip-codes');
-  var count = document.getElementById('dvlnt-sac-zip-count');
-  if (!field || !count) return;
-  function updateCount() {
-    var unique = {};
-    field.value.split(/[\s,]+/).forEach(function (zip) { if (/^\d{5}$/.test(zip)) unique[zip] = true; });
-    var total = Object.keys(unique).length;
-    count.textContent = total + (total === 1 ? ' valid ZIP' : ' valid ZIPs');
-  }
-  field.addEventListener('input', updateCount);
-  updateCount();
-}());
-
+(function($){'use strict';
+var zip=document.getElementById('dvlnt-sac-zip-codes'),count=document.getElementById('dvlnt-sac-zip-count'),preview=document.getElementById('dvlnt-sac-preview');
+function updateCount(){if(!zip||!count)return;var unique={};zip.value.split(/[\s,]+/).forEach(function(v){if(/^\d{5}$/.test(v))unique[v]=1;});var n=Object.keys(unique).length;count.textContent=n+(n===1?' valid ZIP':' valid ZIPs');}
+var map={font_family:['fontFamily',''],eyebrow_font_size:['--pe','px'],eyebrow_font_weight:['--pew',''],heading_size_desktop:['--ph','px'],heading_font_weight:['--phw',''],paragraph_font_size:['--pp','px'],paragraph_font_weight:['--ppw',''],button_font_size:['--pb','px'],button_font_weight:['--pbw',''],label_font_size:['--pl','px'],label_font_weight:['--plw',''],accent_color:['--primary',''],heading_color:['--heading',''],body_color:['--body',''],eyebrow_color:['--eyebrow',''],button_background:['--button-bg',''],button_text_color:['--button-text',''],input_border_color:['--input',''],modal_background:['--modal-bg',''],modal_border_color:['--modal-border',''],border_radius:['--modal-radius','px'],button_radius:['--button-radius','px'],input_radius:['--input-radius','px'],modal_padding:['--padding','px'],button_height:['--button-height','px']};
+function updatePreview(el){if(!preview)return;var key=el.getAttribute('data-preview'),item=map[key];if(!item)return;if(item[0]==='fontFamily')preview.style.fontFamily=el.value+', sans-serif';else preview.style.setProperty(item[0],el.value+item[1]);}
+if(zip){zip.addEventListener('input',updateCount);updateCount();}
+$('.dvlnt-sac-color').wpColorPicker({change:function(e,ui){e.target.value=ui.color.toString();updatePreview(e.target);},clear:function(e){updatePreview(e.target);}});
+document.querySelectorAll('[data-preview]').forEach(function(el){el.addEventListener('input',function(){updatePreview(el);});el.addEventListener('change',function(){updatePreview(el);});updatePreview(el);});
+var reset=document.querySelector('[data-sac-reset]');if(reset)reset.addEventListener('click',function(e){if(!window.confirm('Reset typography, colors, and layout to their defaults? Your ZIP codes, contact details, and content will not be changed.'))e.preventDefault();});
+}(jQuery));

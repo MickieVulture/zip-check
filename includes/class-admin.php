@@ -1,108 +1,27 @@
 <?php
-/**
- * Admin settings screen.
- *
- * @package DVLNT_Service_Area_Checker
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
+/** Admin settings screen. @package DVLNT_Service_Area_Checker */
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 class DVLNT_SAC_Admin {
-	/** @return void */
-	public static function init() {
-		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
-		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'assets' ) );
-	}
-
-	/** @return void */
-	public static function menu() {
-		add_options_page(
-			__( 'Service Area Checker', 'dvlnt-service-area-checker' ),
-			__( 'Service Area Checker', 'dvlnt-service-area-checker' ),
-			'manage_options',
-			'dvlnt-service-area-checker',
-			array( __CLASS__, 'render' )
-		);
-	}
-
-	/** @param string $hook Current admin hook. @return void */
-	public static function assets( $hook ) {
-		if ( 'settings_page_dvlnt-service-area-checker' !== $hook ) {
-			return;
-		}
-		wp_enqueue_style( 'dvlnt-sac-admin', DVLNT_SAC_URL . 'assets/css/admin.css', array(), DVLNT_SAC_VERSION );
-		wp_enqueue_script( 'dvlnt-sac-admin', DVLNT_SAC_URL . 'assets/js/admin.js', array(), DVLNT_SAC_VERSION, true );
-	}
-
-	/** @return void */
-	public static function render() {
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-		$settings = DVLNT_SAC_Settings::get();
-		$sections = array(
-			'Contact' => array(
-				'phone'       => array( 'Phone Number', 'text' ),
-				'booking_url' => array( 'Booking URL', 'url' ),
-			),
-			'Initial State' => array(
-				'initial_eyebrow'     => array( 'Eyebrow', 'text' ),
-				'initial_heading'     => array( 'Heading', 'text' ),
-				'initial_description' => array( 'Description', 'text' ),
-				'zip_label'           => array( 'ZIP Label', 'text' ),
-				'zip_placeholder'     => array( 'ZIP Placeholder', 'text' ),
-				'check_label'         => array( 'Check Button Label', 'text' ),
-			),
-			'Success State' => array(
-				'success_eyebrow'     => array( 'Eyebrow', 'text' ),
-				'success_heading'     => array( 'Heading', 'text' ),
-				'success_description' => array( 'Description (supports [ZIP])', 'text' ),
-				'success_reassurance' => array( 'Reassurance Text', 'text' ),
-				'booking_label'       => array( 'Booking Button Label', 'text' ),
-				'call_label'          => array( 'Call Button Label', 'text' ),
-			),
-			'Unavailable State' => array(
-				'unavailable_eyebrow'     => array( 'Eyebrow', 'text' ),
-				'unavailable_heading'     => array( 'Heading', 'text' ),
-				'unavailable_description' => array( 'Description (supports [ZIP])', 'text' ),
-				'retry_label'             => array( 'Retry Button Label', 'text' ),
-			),
-			'Appearance' => array(
-				'accent_color'  => array( 'Primary Accent Color', 'color' ),
-				'border_radius' => array( 'Modal Border Radius (px)', 'number' ),
-			),
-		);
+	public static function init(){add_action('admin_menu',array(__CLASS__,'menu'));add_action('admin_enqueue_scripts',array(__CLASS__,'assets'));add_action('admin_post_dvlnt_sac_reset_appearance',array(__CLASS__,'reset_appearance'));}
+	public static function menu(){add_menu_page(__('Service Area Checker','dvlnt-service-area-checker'),__('Service Area Checker','dvlnt-service-area-checker'),'manage_options','dvlnt-service-area-checker',array(__CLASS__,'render'),'dashicons-location-alt',58);}
+	public static function assets($hook){if('toplevel_page_dvlnt-service-area-checker'!==$hook){return;}wp_enqueue_style('wp-color-picker');wp_enqueue_style('dvlnt-sac-admin',DVLNT_SAC_URL.'assets/css/admin.css',array('wp-color-picker'),DVLNT_SAC_VERSION);wp_enqueue_script('dvlnt-sac-admin',DVLNT_SAC_URL.'assets/js/admin.js',array('wp-color-picker'),DVLNT_SAC_VERSION,true);}
+	public static function reset_appearance(){if(!current_user_can('manage_options')){wp_die(esc_html__('You do not have permission to do this.','dvlnt-service-area-checker'));}check_admin_referer('dvlnt_sac_reset_appearance');$current=DVLNT_SAC_Settings::get();$defaults=DVLNT_SAC_Settings::defaults();foreach(DVLNT_SAC_Settings::appearance_keys() as $key){$current[$key]=$defaults[$key];}update_option(DVLNT_SAC_Settings::OPTION_NAME,$current);wp_safe_redirect(add_query_arg(array('page'=>'dvlnt-service-area-checker','appearance-reset'=>'1'),admin_url('admin.php')));exit;}
+	private static function field($s,$key,$label,$type='text',$args=array()){$name=DVLNT_SAC_Settings::OPTION_NAME.'['.$key.']';$class=!empty($args['color'])?'dvlnt-sac-color':'regular-text';echo '<div class="dvlnt-sac-field"><label for="dvlnt-sac-'.esc_attr($key).'">'.esc_html($label).'</label>';if('select'===$type){echo '<select id="dvlnt-sac-'.esc_attr($key).'" name="'.esc_attr($name).'" data-preview="'.esc_attr($key).'">';foreach($args['options'] as $value=>$text){echo '<option value="'.esc_attr($value).'" '.selected($s[$key],(string)$value,false).'>'.esc_html($text).'</option>';}echo '</select>';}else{echo '<input id="dvlnt-sac-'.esc_attr($key).'" name="'.esc_attr($name).'" type="'.esc_attr($type).'" value="'.esc_attr($s[$key]).'" class="'.esc_attr($class).'" data-preview="'.esc_attr($key).'"'.(isset($args['min'])?' min="'.esc_attr($args['min']).'" max="'.esc_attr($args['max']).'"':'').'>'; }echo '</div>';}
+	public static function render(){
+		if(!current_user_can('manage_options')){return;}$s=DVLNT_SAC_Settings::get();
+		$weights=array('400'=>'Normal (400)','500'=>'Medium (500)','600'=>'Semi-bold (600)','700'=>'Bold (700)','800'=>'Extra-bold (800)','900'=>'Black (900)');$font_names=array('Lato','Arial','Helvetica','Open Sans','Roboto','Montserrat','Poppins','Inter','system-ui');$fonts=array_combine($font_names,$font_names);
 		?>
-		<div class="wrap dvlnt-sac-admin">
-			<h1><?php echo esc_html__( 'DVLNT Service Area Checker', 'dvlnt-service-area-checker' ); ?></h1>
-			<p><?php echo esc_html__( 'Add [service_area_checker] to the page, then add the CSS class service-area-trigger to any Brizy button or element.', 'dvlnt-service-area-checker' ); ?></p>
-			<form action="options.php" method="post">
-				<?php settings_fields( 'dvlnt_sac_group' ); ?>
-				<section class="dvlnt-sac-card">
-					<h2><?php echo esc_html__( 'ZIP Codes', 'dvlnt-service-area-checker' ); ?></h2>
-					<label for="dvlnt-sac-zip-codes"><?php echo esc_html__( 'Serviced ZIP Codes', 'dvlnt-service-area-checker' ); ?></label>
-					<textarea id="dvlnt-sac-zip-codes" name="<?php echo esc_attr( DVLNT_SAC_Settings::OPTION_NAME ); ?>[zip_codes]" rows="12" class="large-text code"><?php echo esc_textarea( $settings['zip_codes'] ); ?></textarea>
-					<p class="description"><?php echo esc_html__( 'Enter one per line, comma-separated, or mixed. Invalid entries are removed and duplicates are merged when saved.', 'dvlnt-service-area-checker' ); ?> <span id="dvlnt-sac-zip-count"></span></p>
-				</section>
-				<?php foreach ( $sections as $title => $fields ) : ?>
-					<section class="dvlnt-sac-card">
-						<h2><?php echo esc_html( $title ); ?></h2>
-						<table class="form-table" role="presentation"><tbody>
-						<?php foreach ( $fields as $key => $field ) : ?>
-							<tr>
-								<th scope="row"><label for="dvlnt-sac-<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $field[0] ); ?></label></th>
-								<td><input id="dvlnt-sac-<?php echo esc_attr( $key ); ?>" name="<?php echo esc_attr( DVLNT_SAC_Settings::OPTION_NAME ); ?>[<?php echo esc_attr( $key ); ?>]" type="<?php echo esc_attr( $field[1] ); ?>" value="<?php echo esc_attr( $settings[ $key ] ); ?>" class="regular-text"<?php echo 'number' === $field[1] ? ' min="0" max="48"' : ''; ?>></td>
-							</tr>
-						<?php endforeach; ?>
-						</tbody></table>
-					</section>
-				<?php endforeach; ?>
-				<?php submit_button(); ?>
-			</form>
-		</div>
+		<div class="wrap dvlnt-sac-admin"><header class="dvlnt-sac-header"><div><h1><?php esc_html_e('Service Area Checker','dvlnt-service-area-checker');?></h1><p><?php esc_html_e('Manage service coverage, modal content, and appearance.','dvlnt-service-area-checker');?></p></div><code>[service_area_checker]</code></header>
+		<?php if(isset($_GET['appearance-reset'])):?><div class="notice notice-success is-dismissible"><p><?php esc_html_e('Appearance settings restored to defaults.','dvlnt-service-area-checker');?></p></div><?php endif;?>
+		<form action="options.php" method="post" id="dvlnt-sac-settings-form"><?php settings_fields('dvlnt_sac_group');?>
+		<div class="dvlnt-sac-layout"><main>
+		<section class="dvlnt-sac-card"><div class="dvlnt-sac-card__heading"><h2><?php esc_html_e('Service Area','dvlnt-service-area-checker');?></h2><span id="dvlnt-sac-zip-count" class="dvlnt-sac-count"></span></div><p><?php esc_html_e('Add every five-digit ZIP code you currently serve.','dvlnt-service-area-checker');?></p><label for="dvlnt-sac-zip-codes"><strong><?php esc_html_e('ZIP Codes','dvlnt-service-area-checker');?></strong></label><textarea id="dvlnt-sac-zip-codes" name="<?php echo esc_attr(DVLNT_SAC_Settings::OPTION_NAME);?>[zip_codes]" rows="9" class="large-text code"><?php echo esc_textarea($s['zip_codes']);?></textarea><p class="description"><?php esc_html_e('Separate entries with new lines, commas, or both. Invalid entries are removed and duplicates merged when saved.','dvlnt-service-area-checker');?></p></section>
+		<section class="dvlnt-sac-card"><h2><?php esc_html_e('Contact & Actions','dvlnt-service-area-checker');?></h2><p><?php esc_html_e('Set the destinations and labels shown after a successful check.','dvlnt-service-area-checker');?></p><div class="dvlnt-sac-fields"><?php self::field($s,'phone','Phone Number');self::field($s,'booking_url','Booking URL','url');self::field($s,'call_label','Call Button Label');self::field($s,'booking_label','Booking Button Label');?></div></section>
+		<section class="dvlnt-sac-card"><h2><?php esc_html_e('Content','dvlnt-service-area-checker');?></h2><p><?php esc_html_e('Customize each modal state. [ZIP] inserts the submitted ZIP code.','dvlnt-service-area-checker');?></p><?php $groups=array('Initial State'=>array('initial_eyebrow'=>'Eyebrow','initial_heading'=>'Heading','initial_description'=>'Description','zip_label'=>'ZIP Label','zip_placeholder'=>'ZIP Placeholder','check_label'=>'Check Button Label'),'Success State'=>array('success_eyebrow'=>'Eyebrow','success_heading'=>'Heading','success_description'=>'Description (supports [ZIP])','success_reassurance'=>'Reassurance Text'),'Unavailable State'=>array('unavailable_eyebrow'=>'Eyebrow','unavailable_heading'=>'Heading','unavailable_description'=>'Description (supports [ZIP])','retry_label'=>'Retry Button Label'));foreach($groups as $title=>$fields):?><details class="dvlnt-sac-content" <?php echo 'Initial State'===$title?'open':'';?>><summary><?php echo esc_html($title);?></summary><div class="dvlnt-sac-fields"><?php foreach($fields as $key=>$label){self::field($s,$key,$label);}?></div></details><?php endforeach;?></section>
+		<section class="dvlnt-sac-card"><h2><?php esc_html_e('Typography','dvlnt-service-area-checker');?></h2><div class="dvlnt-sac-fields"><?php self::field($s,'font_family','Font Family','select',array('options'=>$fonts));foreach(array('eyebrow_font_size'=>'Eyebrow Size','heading_size_desktop'=>'Heading Size — Desktop','heading_size_tablet'=>'Heading Size — Tablet','heading_size_mobile'=>'Heading Size — Mobile','paragraph_font_size'=>'Paragraph Size','button_font_size'=>'Button Size','label_font_size'=>'Form Label Size') as $k=>$l){self::field($s,$k,$l.' (px)','number',array('min'=>10,'max'=>72));}foreach(array('eyebrow_font_weight'=>'Eyebrow Weight','heading_font_weight'=>'Heading Weight','paragraph_font_weight'=>'Paragraph Weight','button_font_weight'=>'Button Weight','label_font_weight'=>'Form Label Weight') as $k=>$l){self::field($s,$k,$l,'select',array('options'=>$weights));}?></div></section>
+		<section class="dvlnt-sac-card"><h2><?php esc_html_e('Colors','dvlnt-service-area-checker');?></h2><div class="dvlnt-sac-fields dvlnt-sac-fields--colors"><?php foreach(array('accent_color'=>'Primary Accent','heading_color'=>'Heading','body_color'=>'Body Text','eyebrow_color'=>'Eyebrow','button_background'=>'Button Background','button_text_color'=>'Button Text','input_border_color'=>'Input Border','modal_background'=>'Modal Background','modal_border_color'=>'Modal Border','overlay_color'=>'Overlay','success_color'=>'Success','error_color'=>'Error / Unavailable') as $k=>$l){self::field($s,$k,$l,'text',array('color'=>true));}?></div></section>
+		<section class="dvlnt-sac-card"><h2><?php esc_html_e('Layout & Shape','dvlnt-service-area-checker');?></h2><div class="dvlnt-sac-fields"><?php foreach(array('border_radius'=>'Modal Border Radius','button_radius'=>'Button Border Radius','input_radius'=>'Input Border Radius','modal_max_width'=>'Modal Max Width','modal_padding'=>'Modal Inner Padding','button_height'=>'Button Height') as $k=>$l){self::field($s,$k,$l.' (px)','number',array('min'=>0,'max'=>800));}?></div></section>
+		</main><aside><div class="dvlnt-sac-preview-card"><h2><?php esc_html_e('Preview','dvlnt-service-area-checker');?></h2><div class="dvlnt-sac-preview-wrap"><div id="dvlnt-sac-preview"><span class="preview-eyebrow"><?php echo esc_html($s['initial_eyebrow']);?></span><h3><?php echo esc_html($s['initial_heading']);?></h3><p><?php echo esc_html($s['initial_description']);?></p><label><?php echo esc_html($s['zip_label']);?></label><input disabled placeholder="<?php echo esc_attr($s['zip_placeholder']);?>"><button type="button"><?php echo esc_html($s['check_label']);?></button></div></div></div><div class="dvlnt-sac-save"><?php submit_button(__('Save Changes','dvlnt-service-area-checker'),'primary','submit',false);?><a class="button-link-delete" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=dvlnt_sac_reset_appearance'),'dvlnt_sac_reset_appearance'));?>" data-sac-reset><?php esc_html_e('Reset Appearance to Defaults','dvlnt-service-area-checker');?></a></div></aside></div></form></div>
 		<?php
 	}
 }
-
