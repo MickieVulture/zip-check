@@ -28,12 +28,13 @@ class DVLNT_SAC_Ajax {
 
 		$settings = DVLNT_SAC_Settings::get();
 		$zip_list = preg_split( '/\R/', $settings['zip_codes'], -1, PREG_SPLIT_NO_EMPTY );
+		$serviced = in_array( $zip, $zip_list, true );
+		DVLNT_SAC_Analytics::record_check( $zip, $serviced );
 		wp_send_json_success(
 			array(
-				'serviced' => in_array( $zip, $zip_list, true ),
+				'serviced' => $serviced,
 				'zip'      => $zip,
 			)
 		);
 	}
 }
-

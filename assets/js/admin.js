@@ -7,4 +7,5 @@ if(zip){zip.addEventListener('input',updateCount);updateCount();}
 $('.dvlnt-sac-color').wpColorPicker({change:function(e,ui){e.target.value=ui.color.toString();updatePreview(e.target);},clear:function(e){updatePreview(e.target);}});
 document.querySelectorAll('[data-preview]').forEach(function(el){el.addEventListener('input',function(){updatePreview(el);});el.addEventListener('change',function(){updatePreview(el);});updatePreview(el);});
 var reset=document.querySelector('[data-sac-reset]');if(reset)reset.addEventListener('click',function(e){if(!window.confirm('Reset typography, colors, and layout to their defaults? Your ZIP codes, contact details, and content will not be changed.'))e.preventDefault();});
+var clear=document.querySelector('[data-sac-clear-analytics]');if(clear)clear.addEventListener('click',function(e){if(!window.confirm('Permanently clear all ZIP check and conversion analytics? This cannot be undone.'))e.preventDefault();});
 }(jQuery));

@@ -1,8 +1,11 @@
 (function () {
   'use strict';
 
+  if (window.dvlntSACBound) return;
+
   var modal = document.querySelector('[data-dvlnt-sac]');
   if (!modal || typeof dvlntSAC === 'undefined') return;
+	window.dvlntSACBound = true;
 
   var dialog = modal.querySelector('.dvlnt-sac__dialog');
   var form = modal.querySelector('.dvlnt-sac__form');
@@ -10,6 +13,9 @@
   var error = modal.querySelector('.dvlnt-sac__error');
   var submit = form.querySelector('button[type="submit"]');
   var lastTrigger = null;
+	var currentZip = '';
+	var requestInFlight = false;
+	var trackedConversions = {};
 
   function updateViewport() {
     var viewport = window.visualViewport;
@@ -97,6 +103,7 @@
 
   form.addEventListener('submit', function (event) {
     event.preventDefault();
+		if (requestInFlight) return;
     var zip = input.value.trim();
     if (!/^\d{5}$/.test(zip)) {
       error.textContent = dvlntSAC.invalidText;
@@ -108,6 +115,7 @@
     error.textContent = '';
     input.removeAttribute('aria-invalid');
     submit.disabled = true;
+		requestInFlight = true;
     submit.textContent = dvlntSAC.checkingText;
 
     var body = new URLSearchParams({ action: 'dvlnt_sac_check_zip', nonce: dvlntSAC.nonce, zip: zip });
@@ -115,12 +123,25 @@
       .then(function (response) { if (!response.ok) throw new Error('Request failed'); return response.json(); })
       .then(function (response) {
         if (!response.success || !response.data) throw new Error('Invalid response');
+		currentZip = response.data.zip;
+		trackedConversions = {};
         showState(response.data.serviced ? 'success' : 'unavailable', response.data.zip);
         dialog.focus();
       })
       .catch(function () { error.textContent = dvlntSAC.errorText; input.focus(); })
-      .finally(function () { submit.disabled = false; submit.textContent = submit.getAttribute('data-default-text'); });
+		.finally(function () { requestInFlight = false; submit.disabled = false; submit.textContent = submit.getAttribute('data-default-text'); });
   });
+
+	modal.addEventListener('click', function (event) {
+		var action = event.target.closest('[data-sac-conversion]');
+		if (!action || !currentZip) return;
+		var eventName = action.getAttribute('data-sac-conversion');
+		var key = currentZip + ':' + eventName;
+		if (trackedConversions[key]) return;
+		trackedConversions[key] = true;
+		var body = new URLSearchParams({ action: 'dvlnt_sac_track_action', nonce: dvlntSAC.nonce, zip: currentZip, event: eventName });
+		fetch(dvlntSAC.ajaxUrl, { method: 'POST', credentials: 'same-origin', keepalive: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' }, body: body.toString() }).catch(function () {});
+	});
 
   document.addEventListener('keydown', function (event) {
     if (modal.hidden) return;
